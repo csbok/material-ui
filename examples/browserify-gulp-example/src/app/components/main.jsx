@@ -23,6 +23,44 @@ var Main = React.createClass({
   handleSubmit: function(e) {
       this.refs.superSecretPasswordDialog.show();
   },
+
+  handleArticleSubmit: function(article) {
+    // TODO: 서버에 요청을 수행하고 목록을 업데이트한다
+	$.ajax({
+      url: 'http://stylecomp.herokuapp.com/write',
+      dataType: 'json',
+      type: 'POST',
+      data: article,
+      success: function(data) {
+        //this.setState({data: data});
+        this.componentDidMount();
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+
+  getInitialState: function() {
+    return {article: []};
+  },
+
+
+ componentDidMount: function() {
+    $.ajax({
+      url: 'http://stylecomp.herokuapp.com/new',
+      dataType: 'json',
+      cache: false,
+      success: function(data) {
+        this.setState({article: data});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+
+
   render: function() {
     let standardActions = [
       { text: 'Okay' }
@@ -56,7 +94,7 @@ var Main = React.createClass({
 <AppBar
   title="Title"
   iconClassNameRight="muidocs-icon-navigation-expand-more"
-iconElementRight={<c><FlatButton label="Save" /><FlatButton label="Sing in" /><Avatar src="images/uxceo-128.jpg" /></c>} 
+iconElementRight={<c><FlatButton label="Save" /><FlatButton label="Sing in" /><Avatar src="http://lorempixel.com/100/100/nature/" /></c>} 
    />
    {/*
    <LeftNav ref="leftNav" menuItems={menuItems} />
@@ -70,36 +108,74 @@ iconElementRight={<c><FlatButton label="Save" /><FlatButton label="Sing in" /><A
 
       <RaisedButton label="로그인" primary={true} onTouchTap={this.handleSubmit} />
 
-
-<Card>
-  <CardHeader
-    title="Title"
-    subtitle="Subtitle"
-    avatar={<Avatar>A</Avatar>}/>
-  <CardHeader
-    title="Demo Url Based Avatar"
-    subtitle="Subtitle"
-    avatar="http://lorempixel.com/100/100/nature/"/>
-  <CardMedia overlay={<CardTitle title="Title" subtitle="Subtitle"/>}>
-    <img src="http://lorempixel.com/600/337/nature/"/>
-  </CardMedia>
-  <CardTitle title="Title" subtitle="Subtitle"/>
-  <CardActions>
-    <FlatButton label="Action1"/>
-    <FlatButton label="Action2"/>
-  </CardActions>
-  <CardText>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-    Donec mattis pretium massa. Aliquam erat volutpat. Nulla facilisi.
-    Donec vulputate interdum sollicitudin. Nunc lacinia auctor quam sed pellentesque.
-    Aliquam dui mauris, mattis quis lacus id, pellentesque lobortis odio.
-  </CardText>
-</Card>
-
+ 		<WriteForm  onArticleSubmit={this.handleArticleSubmit} />
+ 		<Article article={this.state.article}  />
       </div>
     );
   }
 
+});
+
+
+
+
+
+
+var Article = React.createClass({
+	render: function() {
+
+    var commentNodes = this.props.article.map(function (card) {
+		return (
+<Card style={{margin:'20px auto', maxWidth:'500px'}}>
+  <CardHeader
+    title={card.author}
+    subtitle="Subtitle"
+    avatar="http://lorempixel.com/100/100/nature/"/>
+  <CardText>
+  {card.content}
+  </CardText>
+  <CardActions>
+    <FlatButton label="좋아요"/>
+  </CardActions>
+</Card>
+			);});
+
+	 return (
+        <div>{commentNodes}</div>
+    );    
+
+	}
+});
+
+var WriteForm = React.createClass({
+  handleSubmit: function(e) {
+    e.preventDefault();
+    var content = this.refs.content.getValue().trim();
+    if (!content) {
+      return;
+    }
+    this.props.onArticleSubmit({content: content});
+    this.refs.content.setValue('');
+    return;
+  },
+	render: function() {
+		return (
+			<Card style={{margin:'20px auto', maxWidth:'500px'}}>
+			  <CardHeader
+			    title="Demo Url Based Avatar"
+			    subtitle="Subtitle"
+			    avatar="http://lorempixel.com/100/100/nature/"/>
+			<div style={{paddingLeft:'10px', paddingRight:'10px'}}>
+				<TextField  style={{width:'100%'}}
+				  floatingLabelText="여기에 글을 쓰세요."
+				  multiLine={true} rows="5" ref="content" />
+			</div>
+			  <CardActions style={{textAlign:'right'}}>
+			    <FlatButton label="글쓰기" primary={true} onTouchTap={this.handleSubmit} />
+			  </CardActions>
+			</Card>
+			)
+		}	
 });
 
 var LoginForm = React.createClass({
@@ -124,7 +200,7 @@ var LoginForm = React.createClass({
       return;
     }
     $.ajax({
-      url: 'http://localhost:8080/login',
+      url: 'http://stylecomp.herokuapp.com/login',
       dataType: 'json',
       type: 'POST',
       data: {id:id, pw:pw},
