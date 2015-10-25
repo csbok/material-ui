@@ -1,0 +1,51 @@
+<!doctype html>
+  <html>
+<head>
+  <meta charset="utf-8">
+  <title>Calculator Test</title>
+  <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-1.10.0.css">
+  <script type="text/javascript" src="http://code.jquery.com/qunit/qunit-1.10.0.js"></script>
+  <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script type="text/javascript" src="Calculator.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function(){
+  	test("add 함수 테스트", function(){
+  		ok(Calcurator.hasOwnProperty("add"), "add 함수 존재");
+  		equal(Calcurator.add(1, 2), 3, "add 함수에 1과 2를 더한 결과는 3");
+  		equal(Calcurator.add("1", 2), 3, "add 함수에 1(문자열)과 2를 더한 결과는 3");
+  	});
+
+    test("jQuery 테스트", function() {
+    
+      $.support.cors = true;
+      $.ajax({
+        xhrFields: {
+            withCredentials: true
+        },
+      url: 'http://localhost:8080/join',
+      dataType: 'json',
+      type: 'POST',
+      data: {userName:"curtis", password:"123qwe", mail:"cesilphp@hotmail.com", oauthProvider:0, oauthAccessToken:""},
+      success: function(data) {
+
+          equal(data.result, true, "성공");
+          start();
+
+
+        }.bind(this),
+        error: function(xhr, status, err) {
+          console.error('', status, err.toString());
+        }.bind(this)
+      });
+      stop();
+
+    });
+  });
+  </script>
+</head>
+<body>
+  <div id="qunit"></div>  
+</body>
+</html>
+
