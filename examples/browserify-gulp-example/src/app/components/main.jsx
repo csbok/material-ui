@@ -18,16 +18,88 @@ const CardMedia = require('material-ui/lib/card/card-media');
 const CardTitle = require('material-ui/lib/card/card-title');
 const CardActions = require('material-ui/lib/card/card-actions');
 const CardText = require('material-ui/lib/card/card-text');
+const Snackbar = require('material-ui/lib/snackbar');
+const IconButton = require('material-ui/lib/icon-button');
+const Tabs = require('material-ui/lib/tabs/tabs');
+const Tab = require('material-ui/lib/tabs/tab');
 
-var Main = React.createClass({
-  handleSubmit: function(e) {
-      this.refs.superSecretPasswordDialog.show();
+var loginDialog;
+var joinDialog;
+var mainSnackbar;
+
+var MainSnackBar = React.createClass({
+  getInitialState: function() {
+    return {message:''};
+  },
+ componentDidMount: function() {
+    mainSnackbar = this; 
+  },
+  show: function() {
+    this.refs.snackbar.show();
+  },
+  setMessage: function(msg) {
+    this.setState({message:msg});
   },
 
+  render: function() {
+    return (
+        <Snackbar
+          message={this.state.message}
+          ref="snackbar" />
+          )
+  }
+})
+
+var JoinDialog = React.createClass({
+ componentDidMount: function() {
+    joinDialog = this.refs.joinDialog;
+  },
+
+  render: function() {
+    return (
+         <Dialog
+            title="회원가입하기"
+            ref="joinDialog">
+          <div style={{textAlign:'center'}}>
+            <JoinForm />
+            </div>
+          </Dialog>
+      )
+  }
+});
+
+var LoginDialog = React.createClass({
+   componentDidMount: function() {
+      loginDialog = this.refs.loginDialog;
+    },
+
+  render: function() {
+    let standardActions = [
+      { text: 'Okay' }
+    ];    
+
+    return (
+       <Dialog
+          title="로그인하기"
+          ref="loginDialog">
+          <div style={{textAlign:'center'}}>
+          <LoginForm />
+          </div>
+        </Dialog>      
+      )
+  }
+});
+
+var Main = React.createClass({
   handleArticleSubmit: function(article) {
+    alert(JSON.stringify(article));
     // TODO: 서버에 요청을 수행하고 목록을 업데이트한다
-	$.ajax({
-      url: 'http://stylecomp.herokuapp.com/write',
+    $.support.cors = true;
+    $.ajax({
+      xhrFields: {
+          withCredentials: true
+      },
+      url: 'http://localhost:8080/write',
       dataType: 'json',
       type: 'POST',
       data: article,
@@ -42,13 +114,18 @@ var Main = React.createClass({
   },
 
   getInitialState: function() {
-    return {article: []};
+    return {article: [], tabsValue:''};
   },
 
 
  componentDidMount: function() {
+    $.support.cors = true;
     $.ajax({
-      url: 'http://stylecomp.herokuapp.com/new',
+      xhrFields: {
+          withCredentials: true
+      },
+
+      url: 'http://localhost:8080/new',
       dataType: 'json',
       cache: false,
       success: function(data) {
@@ -60,11 +137,14 @@ var Main = React.createClass({
     });
   },
 
+  _handleTabsChange: function() {
+
+  },
+  _handleButtonClick: function() {
+
+  },
 
   render: function() {
-    let standardActions = [
-      { text: 'Okay' }
-    ];    
     let menuItems = [
   { route: 'get-started', text: 'Get Started' },
   { route: 'customization', text: 'Customization' },
@@ -87,26 +167,109 @@ var Main = React.createClass({
   },
 ];
 
+  let padding = 400;
 
+ let styles = {
+      contentContainerStyle: {
+        marginLeft: -padding,
+      },
+      div: {
+        position: 'absolute',
+        left: 48+200,
+        backgroundColor: Colors.cyan500,
+        width: padding,
+        height: 48,
+      },
+      headline: {
+        fontSize: 24,
+        lineHeight: '32px',
+        paddingTop: 16,
+        marginBottom: 12,
+        letterSpacing: 0,
+//        fontWeight: Typography.fontWeightNormal,
+//        color: Typography.textDarkBlack,
+      },
+      tabBarButton: {
+        position: 'absolute',
+        left: 80,
+        backgroundColor: Colors.cyan500,
+        color: 'white',
+        marginRight: padding,
+      },
+      iconButton: {
+        position: 'absolute',
+        left: 0,
+        backgroundColor: Colors.cyan500,
+        color: 'white',
+        marginRight: padding,
+      },
+      iconStyle: {
+        color: Colors.white,
+      },
+      tabs: {
+        position: 'relative',
+      },
+      tabsContainer: {
+        position: 'relative',
+        paddingLeft: padding,
+      },
+    };
 
     return (
       <div>
+ <div style={styles.tabsContainer}>
+            <IconButton
+              onClick={this._handleButtonClick.bind(this)}
+              iconClassName="material-icons"
+              style={styles.iconButton}
+              iconStyle={styles.iconStyle}>
+              home
+            </IconButton>
+                <FlatButton label="test" style={styles.tabBarButton} />
+            <div style={styles.div}/>
+              <Tabs
+                valueLink={{value: this.state.tabsValue, requestChange: this._handleTabsChange.bind(this)}}
+                style={styles.tabs}
+                contentContainerStyle={styles.contentContainerStyle}>
+                <Tab label="Tab A" value="a">
+                  <div>
+                    <h2 style={styles.headline}>Controllable Tab Examples</h2>
+                    <p>
+                      Tabs are also controllable if you want to programmatically pass them their values.
+                      This allows for more functionality in Tabs such as not
+                      having any Tab selected or assigning them different values.
+                    </p>
+                    <p>(The home Icon Button will unselect all the tabs and hide their content.)</p>
+                  </div>
+                </Tab>
+                <Tab label="Tab B" value="b">
+                  <div>
+                    <h2 style={styles.headline}>Controllable Tab B</h2>
+                    <p>
+                      This is another example of a controllable tab. Remember, if you
+                      use controllable Tabs, you need to give all of your tabs values or else
+                      you wont be able to select them.
+                    </p>
+                    <p>
+                      To see one use for controlled Tabs, press the home button on the right.
+                    </p>
+                  </div>
+                </Tab>
+              </Tabs>
+          </div>
+
+
 <AppBar
   title="Title"
   iconClassNameRight="muidocs-icon-navigation-expand-more"
-iconElementRight={<c><FlatButton label="Save" /><FlatButton label="Sing in" /><Avatar src="http://lorempixel.com/100/100/nature/" /></c>} 
+iconElementRight={<span><FlatButton style={{backgroundColor:'rgba(255,255,255,0)'}} label="Sign in" onTouchTap={()=>{loginDialog.show();}} /><FlatButton label="Sign up" onTouchTap={()=>{joinDialog.show();}}/><Avatar src="http://lorempixel.com/100/100/nature/" /></span>} 
    />
    {/*
    <LeftNav ref="leftNav" menuItems={menuItems} />
  */}
-       <Dialog
-          title="Super Secret Password"
-          actions={standardActions}
-          ref="superSecretPasswordDialog">
-          <LoginForm />
-        </Dialog>      
-
-      <RaisedButton label="로그인" primary={true} onTouchTap={this.handleSubmit} />
+      <LoginDialog />
+      <JoinDialog />
+      <MainSnackBar />
 
  		<WriteForm  onArticleSubmit={this.handleArticleSubmit} />
  		<Article article={this.state.article}  />
@@ -117,11 +280,47 @@ iconElementRight={<c><FlatButton label="Save" /><FlatButton label="Sing in" /><A
 });
 
 
+var LikeButton = React.createClass({
+ handleLikeSubmit: function(e) {
+    e.preventDefault();
+    $.support.cors = true;
+    $.ajax({
+      xhrFields: {
+          withCredentials: true
+      },
+      url: 'http://localhost:8080/good/3',
+      dataType: 'json',
+      type: 'POST',
+      data: '',
+      xhrFields: {
+          withCredentials: true
+      },      
+      success: function(data) {
+        if (!data.result) {
+          loginDialog.show();
+        }
 
+        //this.setState({data: data});
+        console.log(data);
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+render: function() {
+  return (
+    <FlatButton label="좋아요" onTouchTap={this.handleLikeSubmit} />
+    )
+}
+});
 
 
 
 var Article = React.createClass({
+ 
+
+
 	render: function() {
 
     var commentNodes = this.props.article.map(function (card) {
@@ -135,7 +334,7 @@ var Article = React.createClass({
   {card.content}
   </CardText>
   <CardActions>
-    <FlatButton label="좋아요"/>
+    <LikeButton />
   </CardActions>
 </Card>
 			);});
@@ -180,9 +379,7 @@ var WriteForm = React.createClass({
 
 var LoginForm = React.createClass({
   getInitialState () {  
-    return {
-      message: ''
-    };
+    return {message: ''};
   },
   handleSubmit: function(e) {
     e.preventDefault();
@@ -190,26 +387,37 @@ var LoginForm = React.createClass({
     var pw = this.refs.login_pw.getValue().trim();
     if (!id) {
       this.setState({message:'아이디를 입력해주세요.'});
-      this.refs.superSecretPasswordDialog.show();
+      this.refs.snackbar.show();
       return;
     }
 
     if (!pw) {
       this.setState({message:'비밀번호를 입력해주세요.'});
-      this.refs.superSecretPasswordDialog.show();
+      this.refs.snackbar.show();
       return;
     }
+    $.support.cors = true;
     $.ajax({
-      url: 'http://stylecomp.herokuapp.com/login',
+      xhrFields: {
+          withCredentials: true
+      },
+      url: 'http://localhost:8080/login',
       dataType: 'json',
       type: 'POST',
       data: {id:id, pw:pw},
       success: function(data) {
-        //this.setState({data: data});
-        console.log(data);
+        if (data.result) {
+          loginDialog.dismiss();
+          mainSnackbar.setMessage('로그인에 성공하였습니다');
+          mainSnackbar.show();
+        } else { 
+          this.setState({message:data.message});
+          this.refs.snackbar.show();
+        }
       }.bind(this),
       error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
+        this.setState({message:'예상치 못한 오류가 발생하였습니다.'});
+        this.refs.snackbar.show();
       }.bind(this)
     });
   },
@@ -223,19 +431,87 @@ var LoginForm = React.createClass({
     ];    
     return (
       <form onSubmit={this.handleSubmit}>
-       <Dialog
-          title="Super Secret Password"
-          actions={standardActions}
-          ref="superSecretPasswordDialog">
-          {this.state.message}
-        </Dialog>      
+        <Snackbar
+          message={this.state.message}
+          ref="snackbar" />
         <div><TextField ref="login_id" floatingLabelText="name or email" /></div>
         <div><TextField ref="login_pw" floatingLabelText="password" /></div>
-        <div><RaisedButton label="로그인" primary={true} onTouchTap={this.handleSubmit} /></div>
+        <div><RaisedButton label="로그인" primary={true} style={{width:'260px'}} onTouchTap={this.handleSubmit} /></div>
       </form>
     );
   }
 });
+
+
+// userName
+// password
+// mail
+var JoinForm = React.createClass({
+  getInitialState () {  
+    return {message: ''};
+  },
+  handleSubmit: function(e) {
+    e.preventDefault();
+    var id = this.refs.userName.getValue().trim();
+    var pw = this.refs.password.getValue().trim();
+    var mail = this.refs.mail.getValue().trim();
+
+    if (!id) {
+      this.setState({message:'아이디를 입력해주세요.' });
+      this.refs.snackbar.show();
+      return;
+    }
+
+    if (!pw) {
+      this.setState({message:'비밀번호를 입력해주세요.'});
+      this.refs.snackbar.show();
+      return;
+    }
+
+    if (!mail) {
+      this.setState({message:'메일 주소를 입력해주세요.'});
+      this.refs.snackbar.show();
+    }
+    $.support.cors = true;
+    $.ajax({
+      xhrFields: {
+          withCredentials: true
+      },
+      url: 'http://localhost:8080/join',
+      dataType: 'json',
+      type: 'POST',
+      data: {userName:id, password:pw, mail:mail, oauthProvider:0, oauthAccessToken:""},
+      success: function(data) {
+        if (data.result) {
+          mainSnackbar.setMessage('회원가입이 성공하였습니다.');
+          mainSnackbar.show();
+          joinDialog.dismiss();
+        } else {
+          this.setState({message:data.message});
+          this.refs.snackbar.show();
+        }
+      }.bind(this),
+      error: function(xhr, status, err) {
+        this.setState({message:'예상치 못한 오류가 발생하였습니다.'});
+        this.refs.snackbar.show();
+      }.bind(this)
+    });
+  },
+
+  render: function() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <Snackbar
+          message={this.state.message}
+          ref="snackbar" />
+        <div><TextField ref="userName" floatingLabelText="name" /></div>
+        <div><TextField ref="mail" floatingLabelText="email" /></div>
+        <div><TextField ref="password" floatingLabelText="password" /></div>
+        <div><RaisedButton label="회원가입" primary={true} style={{width:'260px'}} onTouchTap={this.handleSubmit} /></div>
+      </form>
+      )
+  }
+})
 /*
 const Main = React.createClass({
 
