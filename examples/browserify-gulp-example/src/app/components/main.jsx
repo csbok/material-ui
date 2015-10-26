@@ -315,7 +315,64 @@ render: function() {
 }
 });
 
+var CommentWrite = React.createClass({
+  handleArticleSubmit: function(comment) {
+    // TODO: 서버에 요청을 수행하고 목록을 업데이트한다
+    $.support.cors = true;
+    $.ajax({
+      xhrFields: {
+          withCredentials: true
+      },
+      url: 'http://localhost:8080/comment/'+this.props.article_no,
+      dataType: 'json',
+      type: 'POST',
+      data: {comment:comment},
+      success: function(data) {
+        //this.setState({data: data});
+//        this.componentDidMount();
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
 
+  handleSubmit: function(e) {
+    e.preventDefault();
+    var comment = this.refs.comment.getValue().trim();
+    if (!comment) {
+      return;
+    }
+//    this.props.onArticleSubmit({content: content});
+    this.handleArticleSubmit(comment);
+    this.refs.comment.setValue('');
+    return;
+  },
+  render: function() {
+    return (
+    <div>
+    <Avatar   src="http://lorempixel.com/100/100/nature/" />
+    test
+      <TextField 
+    floatingLabelText="여기에 글을 쓰세요." ref="comment" />
+          <FlatButton label="글쓰기" primary={true} onTouchTap={this.handleSubmit}  />
+
+    </div>      
+      )
+  }
+});
+
+var CommentList = React.createClass({
+  render : function() {
+    var commentNodes = this.props.comment.map(function(comment) {
+        return(
+          <div>{comment.comment_author} {comment.comment}</div>
+        );});
+
+
+    return (<div>{commentNodes}</div>);
+  }
+});
 
 var Article = React.createClass({
  
@@ -336,6 +393,11 @@ var Article = React.createClass({
   <CardActions>
     <LikeButton />
   </CardActions>
+  <CardActions>
+  </CardActions>
+    <CommentList comment={card.comment_list} />
+    <CommentWrite article_no={card.article_no} />
+  }
 </Card>
 			);});
 
