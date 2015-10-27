@@ -23,12 +23,100 @@ const IconButton = require('material-ui/lib/icon-button');
 const Tabs = require('material-ui/lib/tabs/tabs');
 const Tab = require('material-ui/lib/tabs/tab');
 
+var DropzoneComponent = require('react-dropzone-component');
+
+
+var componentConfig = {
+    allowedFiletypes: ['.jpg', '.png', '.gif'],
+    showFiletypeIcon: true,
+    postUrl: 'http://localhost:8080/upload' //'/uploadHandler'
+};
+
+/**
+ * For a full list of possible configurations,
+ * please consult
+ * http://www.dropzonejs.com/#configuration
+ */
+var djsConfig = {
+    addRemoveLinks: true
+};
+
+/**
+ * If you want to attach multiple callbacks, simply
+ * create an array filled with all your callbacks.
+ * @type {Array}
+ */
+var callbackArray = [
+    function () {
+        console.log('Look Ma, I\'m a callback in an array!');
+    },
+    function () {
+        console.log('Wooooow!');
+    }
+];
+
+/**
+ * Simple callbacks work too, of course.
+ */
+var simpleCallBack = function () {
+    console.log('I\'m a simple callback');
+};
+
+/**
+ * Attach event handlers here to be notified
+ * for pretty much any event.
+ * Arrays are accepted.
+ */
+var eventHandlers = {
+    // All of these receive the event as first parameter:
+    drop: callbackArray,
+    dragstart: null,
+    dragend: null,
+    dragenter: null,
+    dragover: null,
+    dragleave: null,
+    // All of these receive the file as first parameter:
+    addedfile: simpleCallBack,
+    removedfile: null,
+    thumbnail: null,
+    error: null,
+    processing: null,
+    uploadprogress: null,
+    sending: null,
+    success: null,
+    complete: null,
+    canceled: null,
+    maxfilesreached: null,
+    maxfilesexceeded: null,
+    // All of these receive a list of files as first parameter
+    // and are only called if the uploadMultiple option
+    // in djsConfig is true:
+    processingmultiple: null,
+    sendingmultiple: null,
+    successmultiple: null,
+    completemultiple: null,
+    canceledmultiple: null,
+    // Special Events
+    totaluploadprogress: null,
+    reset: null,
+    queuecompleted: null
+}
+
+
+
+
+
+
+
+
 //var server = 'http://localhost:8080';
 var server = 'http://stylecomp.herokuapp.com';
 
 var loginDialog;
 var joinDialog;
 var mainSnackbar;
+var myUserName;
+
 
 var MainSnackBar = React.createClass({
   getInitialState: function() {
@@ -94,8 +182,29 @@ var LoginDialog = React.createClass({
 });
 
 var MyInfo = React.createClass({
+  communi: function() {
+    $.support.cors = true;
+    $.ajax({
+      xhrFields: {
+          withCredentials: true
+      },
+
+      url: server+'/info/curtis',
+      dataType: 'json',
+      cache: false,
+            type: 'GET',
+      success: function(data) {
+        this.setState({userName: data.name, following:data.following, follower:data.follower, article_count:data.article_count});
+//        this.setState({article: data});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+
   getInitialState : function() {
-    return {userName:'', following:0, follower:0};
+    return {userName:'', following:0, follower:0, article_count: 0};
   },
   render: function() {
     return (
@@ -103,6 +212,10 @@ var MyInfo = React.createClass({
           <div>{this.state.userName}</div>
           <div>Following : {this.state.following}</div>
           <div>Follower : {this.state.follower}</div>
+          <div>Article Count : {this.state.article_count}</div>
+            <DropzoneComponent config={componentConfig}
+                       eventHandlers={eventHandlers}
+                       djsConfig={djsConfig} />
         </div>
       )
   }
@@ -160,6 +273,7 @@ var Main = React.createClass({
   },
 
   _handleTabsChange: function() {
+    this.refs.myInfo.communi();
 
   },
   _handleButtonClick: function() {
@@ -276,7 +390,7 @@ var Main = React.createClass({
                   <Article article={this.state.article}  />
                 </Tab>
                 <Tab label="내 정보" value="b">
-                  <MyInfo />
+                  <MyInfo ref="myInfo" />
                 </Tab>
               </Tabs>
           </div>
@@ -496,6 +610,7 @@ var LoginForm = React.createClass({
       data: {id:id, pw:pw},
       success: function(data) {
         if (data.result) {
+          myUserName = id;
           loginDialog.dismiss();
           mainSnackbar.setMessage('로그인에 성공하였습니다');
           mainSnackbar.show();
