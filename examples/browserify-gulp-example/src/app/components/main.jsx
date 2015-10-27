@@ -23,6 +23,9 @@ const IconButton = require('material-ui/lib/icon-button');
 const Tabs = require('material-ui/lib/tabs/tabs');
 const Tab = require('material-ui/lib/tabs/tab');
 
+//var server = 'http://localhost:8080';
+var server = 'http://stylecomp.herokuapp.com';
+
 var loginDialog;
 var joinDialog;
 var mainSnackbar;
@@ -90,22 +93,41 @@ var LoginDialog = React.createClass({
   }
 });
 
+var MyInfo = React.createClass({
+  getInitialState : function() {
+    return {userName:'', following:0, follower:0};
+  },
+  render: function() {
+    return (
+        <div>
+          <div>{this.state.userName}</div>
+          <div>Following : {this.state.following}</div>
+          <div>Follower : {this.state.follower}</div>
+        </div>
+      )
+  }
+});
+
 var Main = React.createClass({
   handleArticleSubmit: function(article) {
-    alert(JSON.stringify(article));
-    // TODO: 서버에 요청을 수행하고 목록을 업데이트한다
     $.support.cors = true;
     $.ajax({
       xhrFields: {
           withCredentials: true
       },
-      url: 'http://localhost:8080/write',
+      url: server+'/write',
       dataType: 'json',
       type: 'POST',
       data: article,
       success: function(data) {
-        //this.setState({data: data});
-        this.componentDidMount();
+        if (!data.result) {
+          mainSnackbar.setMessage("로그인이 필요합니다");
+          mainSnackbar.show();
+          loginDialog.show();
+        } else {
+          //this.setState({data: data});
+          this.componentDidMount();
+        }
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
@@ -125,7 +147,7 @@ var Main = React.createClass({
           withCredentials: true
       },
 
-      url: 'http://localhost:8080/new',
+      url: server+'/new',
       dataType: 'json',
       cache: false,
       success: function(data) {
@@ -175,7 +197,7 @@ var Main = React.createClass({
       },
       div: {
         position: 'absolute',
-        left: 48+200,
+        left: 48,
         backgroundColor: Colors.cyan500,
         width: padding,
         height: 48,
@@ -189,13 +211,28 @@ var Main = React.createClass({
 //        fontWeight: Typography.fontWeightNormal,
 //        color: Typography.textDarkBlack,
       },
-      tabBarButton: {
+      loginButton: {
         position: 'absolute',
+        top: 6,
         left: 80,
         backgroundColor: Colors.cyan500,
         color: 'white',
         marginRight: padding,
       },
+      joinButton: {
+        position: 'absolute',
+        top: 6,
+        left: 160,
+        backgroundColor: Colors.cyan500,
+        color: 'white',
+        marginRight: padding,
+      },
+      avatar: {
+        position: 'absolute',
+        top: 4,
+        left: 40,
+        marginRight: padding,
+      },      
       iconButton: {
         position: 'absolute',
         left: 0,
@@ -217,6 +254,7 @@ var Main = React.createClass({
 
     return (
       <div>
+
  <div style={styles.tabsContainer}>
             <IconButton
               onClick={this._handleButtonClick.bind(this)}
@@ -225,54 +263,38 @@ var Main = React.createClass({
               iconStyle={styles.iconStyle}>
               home
             </IconButton>
-                <FlatButton label="test" style={styles.tabBarButton} />
             <div style={styles.div}/>
+              <Avatar src="http://lorempixel.com/100/100/nature/" style={styles.avatar} />
+                <FlatButton label="로그인"  onTouchTap={()=>{loginDialog.show();}}  style={styles.loginButton} />
+                <FlatButton label="회원가입"  onTouchTap={()=>{joinDialog.show();}}  style={styles.joinButton} />
               <Tabs
                 valueLink={{value: this.state.tabsValue, requestChange: this._handleTabsChange.bind(this)}}
                 style={styles.tabs}
                 contentContainerStyle={styles.contentContainerStyle}>
-                <Tab label="Tab A" value="a">
-                  <div>
-                    <h2 style={styles.headline}>Controllable Tab Examples</h2>
-                    <p>
-                      Tabs are also controllable if you want to programmatically pass them their values.
-                      This allows for more functionality in Tabs such as not
-                      having any Tab selected or assigning them different values.
-                    </p>
-                    <p>(The home Icon Button will unselect all the tabs and hide their content.)</p>
-                  </div>
+                <Tab label="새로운 글" value="a">
+                  <WriteForm  onArticleSubmit={this.handleArticleSubmit} />
+                  <Article article={this.state.article}  />
                 </Tab>
-                <Tab label="Tab B" value="b">
-                  <div>
-                    <h2 style={styles.headline}>Controllable Tab B</h2>
-                    <p>
-                      This is another example of a controllable tab. Remember, if you
-                      use controllable Tabs, you need to give all of your tabs values or else
-                      you wont be able to select them.
-                    </p>
-                    <p>
-                      To see one use for controlled Tabs, press the home button on the right.
-                    </p>
-                  </div>
+                <Tab label="내 정보" value="b">
+                  <MyInfo />
                 </Tab>
               </Tabs>
           </div>
 
+<LoginDialog />
+<JoinDialog />
+<MainSnackBar />
 
+
+   {/*
 <AppBar
   title="Title"
   iconClassNameRight="muidocs-icon-navigation-expand-more"
-iconElementRight={<span><FlatButton style={{backgroundColor:'rgba(255,255,255,0)'}} label="Sign in" onTouchTap={()=>{loginDialog.show();}} /><FlatButton label="Sign up" onTouchTap={()=>{joinDialog.show();}}/><Avatar src="http://lorempixel.com/100/100/nature/" /></span>} 
+iconElementRight={<span><FlatButton style={{backgroundColor:'rgba(255,255,255,0)'}} label="Sign in"/><FlatButton label="Sign up" onTouchTap={()=>{joinDialog.show();}}/></span>} 
    />
-   {/*
    <LeftNav ref="leftNav" menuItems={menuItems} />
  */}
-      <LoginDialog />
-      <JoinDialog />
-      <MainSnackBar />
-
- 		<WriteForm  onArticleSubmit={this.handleArticleSubmit} />
- 		<Article article={this.state.article}  />
+     
       </div>
     );
   }
@@ -288,7 +310,7 @@ var LikeButton = React.createClass({
       xhrFields: {
           withCredentials: true
       },
-      url: 'http://localhost:8080/good/3',
+      url: server+'/good/3',
       dataType: 'json',
       type: 'POST',
       data: '',
@@ -323,11 +345,16 @@ var CommentWrite = React.createClass({
       xhrFields: {
           withCredentials: true
       },
-      url: 'http://localhost:8080/comment/'+this.props.article_no,
+      url: server+'/comment/'+this.props.article_no,
       dataType: 'json',
       type: 'POST',
       data: {comment:comment},
       success: function(data) {
+        if (!data.result) {
+          mainSnackbar.setMessage("로그인이 필요합니다.");
+          mainSnackbar.show();
+          loginDialog.show();
+        }
         //this.setState({data: data});
 //        this.componentDidMount();
       }.bind(this),
@@ -463,7 +490,7 @@ var LoginForm = React.createClass({
       xhrFields: {
           withCredentials: true
       },
-      url: 'http://localhost:8080/login',
+      url: server+'/login',
       dataType: 'json',
       type: 'POST',
       data: {id:id, pw:pw},
@@ -539,7 +566,7 @@ var JoinForm = React.createClass({
       xhrFields: {
           withCredentials: true
       },
-      url: 'http://localhost:8080/join',
+      url: server+'/join',
       dataType: 'json',
       type: 'POST',
       data: {userName:id, password:pw, mail:mail, oauthProvider:0, oauthAccessToken:""},
@@ -548,6 +575,7 @@ var JoinForm = React.createClass({
           mainSnackbar.setMessage('회원가입이 성공하였습니다.');
           mainSnackbar.show();
           joinDialog.dismiss();
+          loginDialog.show();
         } else {
           this.setState({message:data.message});
           this.refs.snackbar.show();
