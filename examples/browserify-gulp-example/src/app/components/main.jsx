@@ -1,129 +1,36 @@
 /** In this file, we create a React component which incorporates components provided by material-ui */
+'use strict';
 
 const React = require('react');
-const RaisedButton = require('material-ui/lib/raised-button');
 const Dialog = require('material-ui/lib/dialog');
 const ThemeManager = require('material-ui/lib/styles/theme-manager');
 const LightRawTheme = require('material-ui/lib/styles/raw-themes/light-raw-theme');
 const Colors = require('material-ui/lib/styles/colors');
-const TextField = require('material-ui/lib/text-field');
 const AppBar = require('material-ui/lib/app-bar');
 const FlatButton = require('material-ui/lib/flat-button');
 const Avatar = require('material-ui/lib/avatar');
 const LeftNav = require('material-ui/lib/left-nav');
 const MenuItem = require('material-ui/lib/menu/menu-item');
-const Card = require('material-ui/lib/card/card');
-const CardHeader = require('material-ui/lib/card/card-header');
-const CardMedia = require('material-ui/lib/card/card-media');
-const CardTitle = require('material-ui/lib/card/card-title');
-const CardActions = require('material-ui/lib/card/card-actions');
-const CardText = require('material-ui/lib/card/card-text');
 const Snackbar = require('material-ui/lib/snackbar');
 const IconButton = require('material-ui/lib/icon-button');
 const Tabs = require('material-ui/lib/tabs/tabs');
 const Tab = require('material-ui/lib/tabs/tab');
 
-var DropzoneComponent = require('react-dropzone-component');
+const MyInfo = require('./MyInfo.jsx');
+const WriteForm = require('./WriteForm.jsx');
+const Article = require('./Article.jsx');
+const JoinForm = require('./JoinForm.jsx')
+const LoginForm = require('./LoginForm.jsx');
 
-
-var componentConfig = {
-    allowedFiletypes: ['.jpg', '.png', '.gif'],
-    showFiletypeIcon: true,
-    postUrl: 'http://localhost:8080/upload' //'/uploadHandler'
-};
-
-/**
- * For a full list of possible configurations,
- * please consult
- * http://www.dropzonejs.com/#configuration
- */
-var djsConfig = {
-    addRemoveLinks: true
-};
-
-/**
- * If you want to attach multiple callbacks, simply
- * create an array filled with all your callbacks.
- * @type {Array}
- */
-var callbackArray = [
-    function () {
-        console.log('Look Ma, I\'m a callback in an array!');
-    },
-    function () {
-        console.log('Wooooow!');
-    }
-];
-
-/**
- * Simple callbacks work too, of course.
- */
-var simpleCallBack = function () {
-    console.log('I\'m a simple callback');
-};
-
-/**
- * Attach event handlers here to be notified
- * for pretty much any event.
- * Arrays are accepted.
- */
-var eventHandlers = {
-    // All of these receive the event as first parameter:
-    drop: callbackArray,
-    dragstart: null,
-    dragend: null,
-    dragenter: null,
-    dragover: null,
-    dragleave: null,
-    // All of these receive the file as first parameter:
-    addedfile: simpleCallBack,
-    removedfile: null,
-    thumbnail: null,
-    error: null,
-    processing: null,
-    uploadprogress: null,
-    sending: null,
-    success: null,
-    complete: null,
-    canceled: null,
-    maxfilesreached: null,
-    maxfilesexceeded: null,
-    // All of these receive a list of files as first parameter
-    // and are only called if the uploadMultiple option
-    // in djsConfig is true:
-    processingmultiple: null,
-    sendingmultiple: null,
-    successmultiple: null,
-    completemultiple: null,
-    canceledmultiple: null,
-    // Special Events
-    totaluploadprogress: null,
-    reset: null,
-    queuecompleted: null
-}
-
-
-
-
-
-
-
-
-//var server = 'http://localhost:8080';
-var server = 'http://stylecomp.herokuapp.com';
-
-var loginDialog;
-var joinDialog;
-var mainSnackbar;
-var myUserName;
-
+const config = require('./config.js');
+const global = require('./global.js');
 
 var MainSnackBar = React.createClass({
   getInitialState: function() {
     return {message:''};
   },
  componentDidMount: function() {
-    mainSnackbar = this; 
+    global.mainSnackbar = this; 
   },
   show: function() {
     this.refs.snackbar.show();
@@ -143,7 +50,7 @@ var MainSnackBar = React.createClass({
 
 var JoinDialog = React.createClass({
  componentDidMount: function() {
-    joinDialog = this.refs.joinDialog;
+    global.joinDialog = this.refs.joinDialog;
   },
 
   render: function() {
@@ -161,7 +68,7 @@ var JoinDialog = React.createClass({
 
 var LoginDialog = React.createClass({
    componentDidMount: function() {
-      loginDialog = this.refs.loginDialog;
+      global.loginDialog = this.refs.loginDialog;
     },
 
   render: function() {
@@ -181,46 +88,6 @@ var LoginDialog = React.createClass({
   }
 });
 
-var MyInfo = React.createClass({
-  communi: function() {
-    $.support.cors = true;
-    $.ajax({
-      xhrFields: {
-          withCredentials: true
-      },
-
-      url: server+'/info/curtis',
-      dataType: 'json',
-      cache: false,
-            type: 'GET',
-      success: function(data) {
-        this.setState({userName: data.name, following:data.following, follower:data.follower, article_count:data.article_count});
-//        this.setState({article: data});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  },
-
-  getInitialState : function() {
-    return {userName:'', following:0, follower:0, article_count: 0};
-  },
-  render: function() {
-    return (
-        <div>
-          <div>{this.state.userName}</div>
-          <div>Following : {this.state.following}</div>
-          <div>Follower : {this.state.follower}</div>
-          <div>Article Count : {this.state.article_count}</div>
-            <DropzoneComponent config={componentConfig}
-                       eventHandlers={eventHandlers}
-                       djsConfig={djsConfig} />
-        </div>
-      )
-  }
-});
-
 var Main = React.createClass({
   handleArticleSubmit: function(article) {
     $.support.cors = true;
@@ -228,15 +95,15 @@ var Main = React.createClass({
       xhrFields: {
           withCredentials: true
       },
-      url: server+'/write',
+      url: config.server+'/write',
       dataType: 'json',
       type: 'POST',
       data: article,
       success: function(data) {
         if (!data.result) {
-          mainSnackbar.setMessage("로그인이 필요합니다");
-          mainSnackbar.show();
-          loginDialog.show();
+          global.mainSnackbar.setMessage("로그인이 필요합니다");
+          global.mainSnackbar.show();
+          global.loginDialog.show();
         } else {
           //this.setState({data: data});
           this.componentDidMount();
@@ -260,7 +127,7 @@ var Main = React.createClass({
           withCredentials: true
       },
 
-      url: server+'/new',
+      url: config.server+'/new',
       dataType: 'json',
       cache: false,
       success: function(data) {
@@ -379,8 +246,8 @@ var Main = React.createClass({
             </IconButton>
             <div style={styles.div}/>
               <Avatar src="http://lorempixel.com/100/100/nature/" style={styles.avatar} />
-                <FlatButton label="로그인"  onTouchTap={()=>{loginDialog.show();}}  style={styles.loginButton} />
-                <FlatButton label="회원가입"  onTouchTap={()=>{joinDialog.show();}}  style={styles.joinButton} />
+                <FlatButton label="로그인"  onTouchTap={()=>{global.loginDialog.show();}}  style={styles.loginButton} />
+                <FlatButton label="회원가입"  onTouchTap={()=>{global.joinDialog.show();}}  style={styles.joinButton} />
               <Tabs
                 valueLink={{value: this.state.tabsValue, requestChange: this._handleTabsChange.bind(this)}}
                 style={styles.tabs}
@@ -415,368 +282,5 @@ iconElementRight={<span><FlatButton style={{backgroundColor:'rgba(255,255,255,0)
 
 });
 
-
-var LikeButton = React.createClass({
- handleLikeSubmit: function(e) {
-    e.preventDefault();
-    $.support.cors = true;
-    $.ajax({
-      xhrFields: {
-          withCredentials: true
-      },
-      url: server+'/good/3',
-      dataType: 'json',
-      type: 'POST',
-      data: '',
-      xhrFields: {
-          withCredentials: true
-      },      
-      success: function(data) {
-        if (!data.result) {
-          loginDialog.show();
-        }
-
-        //this.setState({data: data});
-        console.log(data);
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  },
-render: function() {
-  return (
-    <FlatButton label="좋아요" onTouchTap={this.handleLikeSubmit} />
-    )
-}
-});
-
-var CommentWrite = React.createClass({
-  handleArticleSubmit: function(comment) {
-    // TODO: 서버에 요청을 수행하고 목록을 업데이트한다
-    $.support.cors = true;
-    $.ajax({
-      xhrFields: {
-          withCredentials: true
-      },
-      url: server+'/comment/'+this.props.article_no,
-      dataType: 'json',
-      type: 'POST',
-      data: {comment:comment},
-      success: function(data) {
-        if (!data.result) {
-          mainSnackbar.setMessage("로그인이 필요합니다.");
-          mainSnackbar.show();
-          loginDialog.show();
-        }
-        //this.setState({data: data});
-//        this.componentDidMount();
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  },
-
-  handleSubmit: function(e) {
-    e.preventDefault();
-    var comment = this.refs.comment.getValue().trim();
-    if (!comment) {
-      return;
-    }
-//    this.props.onArticleSubmit({content: content});
-    this.handleArticleSubmit(comment);
-    this.refs.comment.setValue('');
-    return;
-  },
-  render: function() {
-    return (
-    <div>
-    <Avatar   src="http://lorempixel.com/100/100/nature/" />
-    test
-      <TextField 
-    floatingLabelText="여기에 글을 쓰세요." ref="comment" />
-          <FlatButton label="글쓰기" primary={true} onTouchTap={this.handleSubmit}  />
-
-    </div>      
-      )
-  }
-});
-
-var CommentList = React.createClass({
-  render : function() {
-    var commentNodes = this.props.comment.map(function(comment) {
-        return(
-          <div>{comment.comment_author} {comment.comment}</div>
-        );});
-
-
-    return (<div>{commentNodes}</div>);
-  }
-});
-
-var Article = React.createClass({
- 
-
-
-	render: function() {
-
-    var commentNodes = this.props.article.map(function (card) {
-		return (
-<Card style={{margin:'20px auto', maxWidth:'500px'}}>
-  <CardHeader
-    title={card.author}
-    subtitle="Subtitle"
-    avatar="http://lorempixel.com/100/100/nature/"/>
-  <CardText>
-  {card.content}
-  </CardText>
-  <CardActions>
-    <LikeButton />
-  </CardActions>
-  <CardActions>
-  </CardActions>
-    <CommentList comment={card.comment_list} />
-    <CommentWrite article_no={card.article_no} />
-  }
-</Card>
-			);});
-
-	 return (
-        <div>{commentNodes}</div>
-    );    
-
-	}
-});
-
-var WriteForm = React.createClass({
-  handleSubmit: function(e) {
-    e.preventDefault();
-    var content = this.refs.content.getValue().trim();
-    if (!content) {
-      return;
-    }
-    this.props.onArticleSubmit({content: content});
-    this.refs.content.setValue('');
-    return;
-  },
-	render: function() {
-		return (
-			<Card style={{margin:'20px auto', maxWidth:'500px'}}>
-			  <CardHeader
-			    title="Demo Url Based Avatar"
-			    subtitle="Subtitle"
-			    avatar="http://lorempixel.com/100/100/nature/"/>
-			<div style={{paddingLeft:'10px', paddingRight:'10px'}}>
-				<TextField  style={{width:'100%'}}
-				  floatingLabelText="여기에 글을 쓰세요."
-				  multiLine={true} rows="5" ref="content" />
-			</div>
-			  <CardActions style={{textAlign:'right'}}>
-			    <FlatButton label="글쓰기" primary={true} onTouchTap={this.handleSubmit} />
-			  </CardActions>
-			</Card>
-			)
-		}	
-});
-
-var LoginForm = React.createClass({
-  getInitialState () {  
-    return {message: ''};
-  },
-  handleSubmit: function(e) {
-    e.preventDefault();
-    var id = this.refs.login_id.getValue().trim();
-    var pw = this.refs.login_pw.getValue().trim();
-    if (!id) {
-      this.setState({message:'아이디를 입력해주세요.'});
-      this.refs.snackbar.show();
-      return;
-    }
-
-    if (!pw) {
-      this.setState({message:'비밀번호를 입력해주세요.'});
-      this.refs.snackbar.show();
-      return;
-    }
-    $.support.cors = true;
-    $.ajax({
-      xhrFields: {
-          withCredentials: true
-      },
-      url: server+'/login',
-      dataType: 'json',
-      type: 'POST',
-      data: {id:id, pw:pw},
-      success: function(data) {
-        if (data.result) {
-          myUserName = id;
-          loginDialog.dismiss();
-          mainSnackbar.setMessage('로그인에 성공하였습니다');
-          mainSnackbar.show();
-        } else { 
-          this.setState({message:data.message});
-          this.refs.snackbar.show();
-        }
-      }.bind(this),
-      error: function(xhr, status, err) {
-        this.setState({message:'예상치 못한 오류가 발생하였습니다.'});
-        this.refs.snackbar.show();
-      }.bind(this)
-    });
-  },
-
-
-
-
-  render: function() {
-    let standardActions = [
-      { text: 'Okay' }
-    ];    
-    return (
-      <form onSubmit={this.handleSubmit}>
-        <Snackbar
-          message={this.state.message}
-          ref="snackbar" />
-        <div><TextField ref="login_id" floatingLabelText="name or email" /></div>
-        <div><TextField ref="login_pw" floatingLabelText="password" /></div>
-        <div><RaisedButton label="로그인" primary={true} style={{width:'260px'}} onTouchTap={this.handleSubmit} /></div>
-      </form>
-    );
-  }
-});
-
-
-// userName
-// password
-// mail
-var JoinForm = React.createClass({
-  getInitialState () {  
-    return {message: ''};
-  },
-  handleSubmit: function(e) {
-    e.preventDefault();
-    var id = this.refs.userName.getValue().trim();
-    var pw = this.refs.password.getValue().trim();
-    var mail = this.refs.mail.getValue().trim();
-
-    if (!id) {
-      this.setState({message:'아이디를 입력해주세요.' });
-      this.refs.snackbar.show();
-      return;
-    }
-
-    if (!pw) {
-      this.setState({message:'비밀번호를 입력해주세요.'});
-      this.refs.snackbar.show();
-      return;
-    }
-
-    if (!mail) {
-      this.setState({message:'메일 주소를 입력해주세요.'});
-      this.refs.snackbar.show();
-    }
-    $.support.cors = true;
-    $.ajax({
-      xhrFields: {
-          withCredentials: true
-      },
-      url: server+'/join',
-      dataType: 'json',
-      type: 'POST',
-      data: {userName:id, password:pw, mail:mail, oauthProvider:0, oauthAccessToken:""},
-      success: function(data) {
-        if (data.result) {
-          mainSnackbar.setMessage('회원가입이 성공하였습니다.');
-          mainSnackbar.show();
-          joinDialog.dismiss();
-          loginDialog.show();
-        } else {
-          this.setState({message:data.message});
-          this.refs.snackbar.show();
-        }
-      }.bind(this),
-      error: function(xhr, status, err) {
-        this.setState({message:'예상치 못한 오류가 발생하였습니다.'});
-        this.refs.snackbar.show();
-      }.bind(this)
-    });
-  },
-
-  render: function() {
-    return (
-      <form onSubmit={this.handleSubmit}>
-        <Snackbar
-          message={this.state.message}
-          ref="snackbar" />
-        <div><TextField ref="userName" floatingLabelText="name" /></div>
-        <div><TextField ref="mail" floatingLabelText="email" /></div>
-        <div><TextField ref="password" floatingLabelText="password" /></div>
-        <div><RaisedButton label="회원가입" primary={true} style={{width:'260px'}} onTouchTap={this.handleSubmit} /></div>
-      </form>
-      )
-  }
-})
-/*
-const Main = React.createClass({
-
-  childContextTypes: {
-    muiTheme: React.PropTypes.object
-  },
-
-  getInitialState () {
-    return {
-      muiTheme: ThemeManager.getMuiTheme(LightRawTheme),
-    };
-  },
-
-  getChildContext() {
-    return {
-      muiTheme: this.state.muiTheme,
-    };
-  },
-
-  componentWillMount() {
-    let newMuiTheme = ThemeManager.modifyRawThemePalette(this.state.muiTheme, {
-      accent1Color: Colors.deepOrange500
-    });
-
-    this.setState({muiTheme: newMuiTheme});
-  },
-
-  Ω() {
-
-    let containerStyle = {
-      textAlign: 'center',
-      paddingTop: '200px'
-    };
-
-    let standardActions = [
-      { text: 'Okay' }
-    ];
-
-    return (
-      <div style={containerStyle}>
-        <Dialog
-          title="Super Secret Password"
-          actions={standardActions}
-          ref="superSecretPasswordDialog">
-          1-2-3-4-5
-        </Dialog>
-
-        <h1>material-ui</h1>
-        <h2>example project</h2>
-
-        <RaisedButton label="Super Secret Password" primary={true} onTouchTap={this._handleTouchTap} />
-
-      </div>
-    );
-  },
-
-  _handleTouchTap() {
-    this.refs.superSecretPasswordDialog.show();
-  }
-
-});*/
 
 module.exports = Main;
