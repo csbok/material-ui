@@ -24,8 +24,10 @@ var CommentWrite = React.createClass({
           global.mainSnackbar.setMessage("로그인이 필요합니다.");
           global.mainSnackbar.show();
           global.loginDialog.show();
+          return;
         }
         this.props.onRefreshCommentList();
+        this.refs.comment.setValue('');
         //this.setState({data: data});
 //        this.componentDidMount();
       }.bind(this),
@@ -43,7 +45,7 @@ var CommentWrite = React.createClass({
     }
 //    this.props.onArticleSubmit({content: content});
     this.handleArticleSubmit(comment);
-    this.refs.comment.setValue('');
+
     return;
   },
   render: function() {
@@ -62,7 +64,7 @@ var CommentWrite = React.createClass({
 
 var CommentList = React.createClass({
     getInitialState () {  
-    return {comment: this.props.comment};
+    return {comment: /*this.props.comment*/[]};
   },
  onRefreshCommentList: function() {
     this.componentDidMount();
@@ -90,14 +92,14 @@ var CommentList = React.createClass({
   render : function() {
     var commentNodes = this.state.comment.map(function(comment) {
         return(
-          <div key={comment.comment_no}>{comment.comment_author} {comment.comment}</div>
+          <div key={comment.comment_no}>{comment.user.userName} {comment.comment}</div>
         );});
 
 
     return (
       <div>
         {commentNodes}
-        <CommentWrite onRefreshCommentList={this.onRefreshCommentList} article_no={this.props.article_no} />
+        { global.isLogin ? <CommentWrite onRefreshCommentList={this.onRefreshCommentList} article_no={this.props.article_no} /> : null } 
       </div>
       )
   }

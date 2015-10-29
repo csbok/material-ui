@@ -253,7 +253,7 @@ var Main = React.createClass({
                 style={styles.tabs}
                 contentContainerStyle={styles.contentContainerStyle}>
                 <Tab label="새로운 글" value="a">
-                  <WriteForm  onArticleSubmit={this.handleArticleSubmit} />
+                  { global.isLogin ? <WriteForm  onArticleSubmit={this.handleArticleSubmit} /> : null }
                   <Article article={this.state.article}  />
                 </Tab>
                 <Tab label="내 정보" value="b">

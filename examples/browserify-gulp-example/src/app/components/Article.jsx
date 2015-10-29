@@ -25,11 +25,11 @@ var Article = React.createClass({
   {card.content}
   </CardText>
   <CardActions>
-    <GoodButton article_no={card.article_no} />
+    <GoodButton article_no={card.article_no} already={card.good_already} goodCount={card.good_count} />
   </CardActions>
   <CardActions>
   </CardActions>
-    <CommentList comment={card.comment_list} article_no={card.article_no}  />
+  <CommentList article_no={card.article_no}  />
   }
 </Card>
 			);});

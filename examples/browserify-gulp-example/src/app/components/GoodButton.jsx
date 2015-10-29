@@ -6,6 +6,11 @@ const config = require('./config.js');
 const global = require('./global.js');
 
 var GoodButton = React.createClass({
+  getInitialState () {  
+    var good = '';
+    this.props.already ?  good = '좋아요 취소' : good = '좋아요';
+    return {goodMessage : good, goodCount : this.props.goodCount };
+  },
  handleLikeSubmit: function(e) {
     e.preventDefault();
     $.support.cors = true;
@@ -25,6 +30,11 @@ var GoodButton = React.createClass({
           global.loginDialog.show();
         }
 
+        if (data.good) {
+          this.setState({goodMessage:'좋아요 취소', goodCount:this.state.goodCount+1});
+        } else {
+          this.setState({goodMessage:'좋아요',goodCount:this.state.goodCount-1});
+        }
         //this.setState({data: data});
         console.log(data);
       }.bind(this),
@@ -35,7 +45,7 @@ var GoodButton = React.createClass({
   },
 render: function() {
   return (
-    <FlatButton label="좋아요" onTouchTap={this.handleLikeSubmit} />
+    <FlatButton label={this.state.goodMessage+this.state.goodCount} onTouchTap={this.handleLikeSubmit} />
     )
 }
 });
