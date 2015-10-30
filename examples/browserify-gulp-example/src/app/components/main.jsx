@@ -139,10 +139,15 @@ var Main = React.createClass({
     });
   },
 
-  _handleTabsChange: function() {
-    this.refs.myInfo.communi();
 
+  _handleTabChange(value, e, tab) {
+/*
+//    this.refs.myInfo.communi();
+    this.props.history.pushState(null, tab.props.route);
+//    this.setState({tabIndex: this._getSelectedIndex()});
+*/
   },
+
   _handleButtonClick: function() {
 
   },
@@ -249,8 +254,9 @@ var Main = React.createClass({
                 <FlatButton label="로그인"  onTouchTap={()=>{global.loginDialog.show();}}  style={styles.loginButton} />
                 <FlatButton label="회원가입"  onTouchTap={()=>{global.joinDialog.show();}}  style={styles.joinButton} />
               <Tabs
-                valueLink={{value: this.state.tabsValue, requestChange: this._handleTabsChange.bind(this)}}
-                style={styles.tabs}
+    value={this.state.tabIndex}
+              onChange={this._handleTabChange}
+                              style={styles.tabs}
                 contentContainerStyle={styles.contentContainerStyle}>
                 <Tab label="새로운 글" value="a">
                   { global.isLogin ? <WriteForm  onArticleSubmit={this.handleArticleSubmit} /> : null }
