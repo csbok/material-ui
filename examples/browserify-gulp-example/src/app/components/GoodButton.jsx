@@ -22,9 +22,6 @@ var GoodButton = React.createClass({
       dataType: 'json',
       type: 'POST',
       data: '',
-      xhrFields: {
-          withCredentials: true
-      },      
       success: function(data) {
         if (!data.result) {
           global.loginDialog.show();
