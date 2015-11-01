@@ -88,64 +88,16 @@ var LoginDialog = React.createClass({
   }
 });
 
+
 var Main = React.createClass({
-  handleArticleSubmit: function(article) {
-    $.support.cors = true;
-    $.ajax({
-      xhrFields: {
-          withCredentials: true
-      },
-      url: config.server+'/write',
-      dataType: 'json',
-      type: 'POST',
-      data: article,
-      success: function(data) {
-        if (!data.result) {
-          global.mainSnackbar.setMessage("로그인이 필요합니다");
-          global.mainSnackbar.show();
-          global.loginDialog.show();
-        } else {
-          //this.setState({data: data});
-          this.componentDidMount();
-        }
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  },
-
   getInitialState: function() {
-    return {article: [], tabsValue:''};
+    return { tabsValue:''};
   },
-
-
- componentDidMount: function() {
-    $.support.cors = true;
-    $.ajax({
-      xhrFields: {
-          withCredentials: true
-      },
-
-      url: config.server+'/new',
-      dataType: 'json',
-      cache: false,
-      success: function(data) {
-        this.setState({article: data});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  },
-
 
   _handleTabChange(value, e, tab) {
-/*
 //    this.refs.myInfo.communi();
     this.props.history.pushState(null, tab.props.route);
 //    this.setState({tabIndex: this._getSelectedIndex()});
-*/
   },
 
   _handleButtonClick: function() {
@@ -258,12 +210,16 @@ var Main = React.createClass({
               onChange={this._handleTabChange}
                               style={styles.tabs}
                 contentContainerStyle={styles.contentContainerStyle}>
-                <Tab label="새로운 글" value="a">
-                  { global.isLogin ? <WriteForm  onArticleSubmit={this.handleArticleSubmit} /> : null }
-                  <Article article={this.state.article}  />
+                <Tab label="새로운 글" value="a" route="/">
+                  {this.props.children}
                 </Tab>
-                <Tab label="내 정보" value="b">
-                  <MyInfo ref="myInfo" />
+                <Tab label="내 정보" value="b" route="/myinfo">
+                  {this.props.children}
+                  {/*<MyInfo ref="myInfo" />*/}
+                  
+                </Tab>
+                <Tab label="로그인" route="/login">
+                  {this.props.children}
                 </Tab>
               </Tabs>
           </div>

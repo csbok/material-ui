@@ -25,6 +25,7 @@ var GoodButton = React.createClass({
       success: function(data) {
         if (!data.result) {
           global.loginDialog.show();
+          return;
         }
 
         if (data.good) {
